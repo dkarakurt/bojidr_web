@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>bojid-R · Cebindeki 8 kanallı synthesizer</title>
+<meta name="description" content="bojid-R: tarayıcıda ve Android'de çalışan 8 kanallı synthesizer ve groovebox. 5 ses motoru, canlı kayıt, beat kütüphanesi. Ücretsiz APK indir ya da web'de hemen dene.">
+<meta name="theme-color" content="#F3F2EF">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+<link rel="apple-touch-icon" href="assets/logo.svg">
+<meta property="og:title" content="bojid-R · 8 kanallı synthesizer">
+<meta property="og:description" content="Tarayıcıda ve Android'de çalışan synthesizer + groovebox. Ücretsiz.">
+<meta property="og:image" content="assets/screen-tablet.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F2EF;--paper:#FFFFFF;--ink:#1D1D1F;--ink2:#48484D;--muted:#86868B;--line:#E4E3DF;
+  --orange:#FF9F0A;--pink:#FF2D55;--grad:linear-gradient(90deg,#FF9F0A,#FF2D55);
+  --dark:#1C1C1E;--r:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit}
+.mono{font-family:"Space Mono",ui-monospace,monospace}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.eyebrow{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* nav */
+nav.top{position:sticky;top:0;z-index:20;background:rgba(243,242,239,.85);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
+nav.top.scrolled{border-bottom-color:var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:14px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:34px;height:34px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.14))}
+.brand b{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.navlinks{margin-left:auto;display:flex;gap:26px;font-size:14px;color:var(--ink2)}
+.navlinks a{text-decoration:none}
+.navlinks a:hover{color:var(--ink)}
+.navcta{margin-left:18px}
+@media (max-width:820px){.navlinks{display:none}.navcta{margin-left:auto}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;border:0;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.dark{background:var(--dark);color:#fff;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}
+.btn.grad{background:var(--grad);color:#fff;box-shadow:0 12px 28px -10px rgba(255,45,85,.55)}
+.btn.ghost{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.sm{height:40px;padding:0 16px;font-size:13.5px}
+.btn small{font-family:"Space Mono",monospace;font-weight:400;font-size:11px;opacity:.7}
+
+/* hero */
+.hero{padding:70px 0 40px;position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:48px;align-items:center}
+@media (max-width:980px){.hero .wrap{grid-template-columns:1fr}.hero{padding-top:40px}}
+.hero h1{font-size:clamp(44px,6.4vw,84px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin:18px 0 20px}
+.hero p.lead{font-size:clamp(17px,1.6vw,20px);color:var(--ink2);max-width:520px;margin:0 0 30px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.hero-meta{display:flex;gap:22px;margin-top:28px;flex-wrap:wrap}
+.hero-meta div{display:flex;flex-direction:column}
+.hero-meta b{font-size:22px;letter-spacing:-.02em}
+.hero-meta span{font-size:12.5px;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;color:var(--ink2)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--grad)}
+.stage{position:relative}
+.stage::before{content:"";position:absolute;inset:8% -10% -6% 6%;background:radial-gradient(closest-side,rgba(255,159,10,.28),rgba(255,45,85,.16) 55%,transparent);filter:blur(30px);z-index:0}
+.tablet{position:relative;z-index:1;border-radius:28px;padding:12px;background:linear-gradient(180deg,#2a2a2d,#141416);box-shadow:0 50px 90px -40px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06) inset;transform:perspective(1600px) rotateY(-9deg) rotateX(3deg);transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.tablet:hover{transform:perspective(1600px) rotateY(-3deg) rotateX(1deg)}
+.tablet img{display:block;width:100%;height:auto;border-radius:17px}
+.phone{position:absolute;z-index:2;width:46%;left:-8%;bottom:-12%;border-radius:20px;padding:7px;background:#121214;box-shadow:0 30px 60px -24px rgba(0,0,0,.6)}
+.phone img{display:block;width:100%;height:auto;border-radius:14px}
+@media (max-width:980px){.tablet{transform:none}.phone{left:auto;right:-4%;bottom:-14%;width:48%}}
+
+/* sections */
+section{padding:96px 0}
+.sec-head{max-width:720px;margin-bottom:44px}
+.sec-head h2{font-size:clamp(32px,4vw,50px);letter-spacing:-.035em;line-height:1.05;margin:12px 0 14px;font-weight:800}
+.sec-head p{font-size:17px;color:var(--ink2);margin:0}
+
+/* try */
+#dene{padding-top:120px}
+.tryframe{background:var(--paper);border-radius:28px;padding:14px;box-shadow:0 30px 70px -40px rgba(0,0,0,.4),inset 0 0 0 1px var(--line)}
+.trybar{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
+.dots{display:flex;gap:6px}
+.dots i{width:11px;height:11px;border-radius:50%;background:#E4E3DF}
+.trybar .url{flex:1;text-align:center;font-family:"Space Mono",monospace;font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:7px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.screen{position:relative;border-radius:16px;overflow:hidden;background:#F3F2EF;aspect-ratio:16/10;min-height:520px}
+.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.screen .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(243,242,239,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);cursor:pointer;border:0;width:100%;font:inherit;color:inherit}
+.screen .cover img{width:84px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.18))}
+.screen .cover span{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.12em;background:var(--dark);color:#fff;padding:12px 18px;border-radius:12px}
+.trynote{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;justify-content:space-between;padding:16px 8px 4px;font-size:13.5px;color:var(--ink2)}
+.keys{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+kbd{font-family:"Space Mono",monospace;font-size:11px;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.mobile-try{display:none}
+@media (max-width:760px){
+  .screen{display:none}.trybar{display:none}
+  .mobile-try{display:block}
+  .trynote .keys{display:none}
+  .mobile-try img{width:100%;border-radius:14px;display:block;margin-bottom:14px}
+}
+
+/* features */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+.card{background:var(--paper);border-radius:var(--r);padding:26px;box-shadow:inset 0 0 0 1px var(--line);position:relative;overflow:hidden}
+.card .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--bg);margin-bottom:18px}
+.card .ic svg{width:22px;height:22px;fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card h3{margin:0 0 8px;font-size:19px;letter-spacing:-.02em}
+.card p{margin:0;color:var(--ink2);font-size:14.5px}
+.card.feature{grid-column:span 2;display:grid;grid-template-columns:1fr 1.1fr;gap:24px;align-items:center;background:var(--dark);color:#fff;box-shadow:none}
+.card.feature p{color:#B5B5BA}
+.card.feature .ic{background:#2C2C2E}.card.feature .ic svg{stroke:#fff}
+.card.feature img{width:100%;border-radius:12px;display:block}
+@media (max-width:900px){.card.feature{grid-column:auto;grid-template-columns:1fr}}
+.engines{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.engines span{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.08em;padding:5px 9px;border-radius:999px;background:var(--bg);display:inline-flex;align-items:center;gap:6px}
+.engines span i{width:7px;height:7px;border-radius:50%}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;counter-reset:s}
+@media (max-width:900px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.step{padding:24px;border-radius:var(--r);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.step::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:"Space Mono",monospace;font-size:13px;font-weight:700;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--grad);color:#fff;margin-bottom:16px}
+.step h3{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+.step p{margin:0;font-size:14px;color:var(--ink2)}
+
+/* download */
+.dl{background:var(--dark);color:#fff;border-radius:34px;padding:64px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:center;position:relative;overflow:hidden}
+.dl::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,45,85,.45),rgba(255,159,10,.15) 60%,transparent);filter:blur(10px)}
+.dl>*{position:relative;z-index:1}
+.dl h2{font-size:clamp(32px,4vw,52px);letter-spacing:-.035em;line-height:1.02;margin:12px 0 16px;font-weight:800}
+.dl p{color:#B5B5BA;margin:0 0 28px;font-size:16.5px}
+.dl .eyebrow{color:#8E8E93}
+.dl .btn.ghost{background:#2C2C2E;color:#fff;box-shadow:none}
+.ver{font-family:"Space Mono",monospace;font-size:12px;color:#8E8E93;margin-top:14px}
+.install{background:#2C2C2E;border-radius:20px;padding:26px}
+.install h3{margin:0 0 14px;font-size:15px;letter-spacing:-.01em}
+.install ol{margin:0;padding-left:20px;color:#D1D1D6;font-size:14.5px}
+.install li{margin-bottom:10px}
+.install li::marker{color:#FF9F0A;font-family:"Space Mono",monospace}
+.install .req{margin-top:16px;padding-top:14px;border-top:1px solid #3A3A3C;font-size:12.5px;color:#8E8E93;display:flex;flex-wrap:wrap;gap:6px 16px}
+@media (max-width:900px){.dl{grid-template-columns:1fr;padding:36px 26px;border-radius:26px}}
+
+/* faq */
+.faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.faq{grid-template-columns:1fr}}
+details{background:var(--paper);border-radius:18px;padding:18px 22px;box-shadow:inset 0 0 0 1px var(--line)}
+summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:"Space Mono",monospace;color:var(--muted);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin:10px 0 0;color:var(--ink2);font-size:14.5px}
+
+footer{padding:50px 0 60px;color:var(--muted);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;border-top:1px solid var(--line);padding-top:30px}
+footer .brand b{font-size:15px;color:var(--ink)}
+footer .links{margin-left:auto;display:flex;gap:22px;flex-wrap:wrap}
+footer a{text-decoration:none}footer a:hover{color:var(--ink)}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.tablet{transform:none}}
+</style>
+</head>
+<body>
+
+<nav class="top" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/logo.svg" alt=""><b>bojid-R</b></a>
+    <div class="navlinks">
+      <a href="#dene">Web'de dene</a>
+      <a href="#ozellikler">Özellikler</a>
+      <a href="#nasil">Nasıl çalışır</a>
+      <a href="#indir">İndir</a>
+    </div>
+    <a class="btn dark sm navcta" href="#indir">APK indir</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="badge"><i></i>Ücretsiz · Android ve web</span>
+      <h1>Cebindeki<br><span class="grad-text">8 kanallı</span><br>synthesizer.</h1>
+      <p class="lead">bojid-R; davul, bas, piyano ve synth seslerini 8 kanalda birleştirip beat yapmanı sağlayan bir groovebox. Telefonda, tablette ve tarayıcıda çalışır.</p>
+      <div class="ctas">
+        <a class="btn grad" href="https://github.com/dkarakurt/bojid/releases/latest/download/bojid-R.apk" data-apk>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16"/></svg>
+          APK indir <small data-ver></small></a>
+        <a class="btn ghost" href="#dene">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+          Web'de dene</a>
+      </div>
+      <div class="hero-meta">
+        <div><b>8</b><span>kanal</span></div>
+        <div><b>5</b><span>ses motoru</span></div>
+        <div><b>14</b><span>hazır ses</span></div>
+        <div><b>4 bar</b><span>pattern</span></div>
+      </div>
+    </div>
+    <div class="stage reveal">
+      <div class="tablet"><img src="assets/screen-tablet.jpg" alt="bojid-R tablet ekranı: synth ekranı, renkli knob'lar, step sequencer ve klavye" width="2560" height="1600"></div>
+      <div class="phone"><img src="assets/screen-phone.jpg" alt="bojid-R telefonda yatay ekran" width="1688" height="780"></div>
+    </div>
+  </div>
+</header>
+
+<section id="dene">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Web'de dene</span>
+      <h2>Kurulum yok. Hemen çal.</h2>
+      <p>Aşağıdaki bojid-R gerçek uygulamanın kendisi. Ekrana dokun, sesi aç ve klavyeden çalmaya başla. Kaydettiğin sesler ve beat'ler tarayıcında saklanır.</p>
+    </div>
+    <div class="tryframe reveal">
+      <div class="trybar"><div class="dots"><i></i><i></i><i></i></div><div class="url">bojid-R · web</div><a class="btn ghost sm" href="app/" target="_blank" rel="noopener">Tam ekran aç ↗</a></div>
+      <div class="screen" id="screen">
+        <button class="cover" id="cover" aria-label="bojid-R'ı burada başlat">
+          <img src="assets/logo.svg" alt="">
+          <span>▶ BURADA BAŞLAT</span>
+        </button>
+      </div>
+      <div class="mobile-try">
+        <img src="assets/screen-phone.jpg" alt="bojid-R telefonda">
+        <a class="btn dark" href="app/" style="width:100%;justify-content:center">▶ Web sürümünü aç</a>
+      </div>
+      <div class="trynote">
+        <div class="keys">Bilgisayar klavyesi: <kbd>A</kbd>–<kbd>'</kbd> notalar · <kbd>Z</kbd>/<kbd>X</kbd> oktav · <kbd>Boşluk</kbd> çal · <kbd>R</kbd> kayıt</div>
+        <div>İpucu: mikserde <b>DEMO</b>'ya bas ve ▶ ile dinle.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ozellikler">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Özellikler</span>
+      <h2>Küçük ekran, tam bir stüdyo.</h2>
+      <p>Bir donanım synth'in sadeliğini, bir müzik uygulamasının esnekliğiyle birleştirir.</p>
+    </div>
+    <div class="grid">
+      <div class="card feature reveal">
+        <div>
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>
+          <h3>8 kanal, tek dokunuşla</h3>
+          <p>Her kanala ayrı bir enstrüman ve kendi pattern'ini ver: 1. kanalda davul, 2. kanalda piyano, 3. kanalda bas. ▶ hepsini birlikte çalar. Ses seviyesi, mute ve solo her kanalda.</p>
+        </div>
+        <img src="assets/screen-mix.jpg" alt="bojid-R kanal mikseri" loading="lazy">
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M2 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/></svg></div>
+        <h3>5 ses motoru</h3>
+        <p>Analog, FM, telli çalgı, davul ve sampler. Dalga, zarf, filtre ve efektleri 4 renkli knob'la şekillendir.</p>
+        <div class="engines"><span><i style="background:#3d7bf5"></i>ANALOG</span><span><i style="background:#2fb36d"></i>FM</span><span><i style="background:#f2c230"></i>PLUCK</span><span><i style="background:#ff5a1f"></i>DRUM</span><span><i style="background:#b06cf0"></i>SAMPLER</span></div>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="#FF2D55" stroke="none"/></svg></div>
+        <h3>Canlı kayıt</h3>
+        <p>● tuşuna bas, 4 vuruşluk sayımı bekle ve çal. Notalar zamanlamaları ve uzunluklarıyla kanala yazılır. Beğenmezsen geri al.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v6l2-1.5L12 10V4"/></svg></div>
+        <h3>Beat kütüphanesi</h3>
+        <p>Yaptığın beat'i enstrümanlarıyla kaydet, yeni bir projede istediğin kanala tek dokunuşla geri ekle.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></div>
+        <h3>Kendi sesini ekle</h3>
+        <p>WAV, MP3 ya da OGG dosyası yükle. Sampler klavyeye yayar; perde, başlangıç, ters çalma ve loop ayarlanır.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 18v2M16 18v2"/></svg></div>
+        <h3>16 adımlı sequencer</h3>
+        <p>Pattern'ler kanal başına 4 bara kadar uzar; ×2 ile kopyala, barlar arasında gez. Tempo 40–240 BPM.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="2"/><rect x="7" y="3" width="10" height="18" rx="2" transform="rotate(90 12 12)" opacity=".0"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+        <h3>Tablet ve telefon için</h3>
+        <p>Dokunmatik ekran için tasarlandı: Setup, Kanallar ve Sesler sekmeleri. Telefonda yatay, tablette tam ekran çalışır.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="nasil">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Nasıl çalışır</span>
+      <h2>İlk beat'in dört adımda.</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><h3>Kanal seç</h3><p>Kanallar sekmesinde bir kanala dokun ve listeden enstrümanını seç: davul, piyano, bas…</p></div>
+      <div class="step reveal"><h3>Pattern yaz</h3><p>Bir nota çal, sonra 16 step'ten istediklerine dokun. Ya da ● ile canlı kaydet.</p></div>
+      <div class="step reveal"><h3>Sesi şekillendir</h3><p>Renkli knob'larla dalga, zarf, filtre ve delay/reverb'ü ayarla.</p></div>
+      <div class="step reveal"><h3>Kaydet, tekrar kullan</h3><p>BEAT KAYDET ile beat'ini sakla; yeni projelerde istediğin kanala ekle.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="indir">
+  <div class="wrap">
+    <div class="dl reveal">
+      <div>
+        <span class="eyebrow">Android</span>
+        <h2>bojid-R'ı telefonuna ve tabletine kur.</h2>
+        <p>Ücretsiz, reklamsız, hesap gerektirmez. Uygulama yatay ekranda tam ekran açılır.</p>
+        <div class="ctas">
+          <a class="btn grad" href="https://github.com/dkarakurt/bojid/releases/latest/download/bojid-R.apk" data-apk>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16"/></svg>
+            APK indir</a>
+          <a class="btn ghost" href="app/">Web sürümü</a>
+        </div>
+        <div class="ver" id="ver">En son sürüm · GitHub Releases</div>
+      </div>
+      <div class="install">
+        <h3>Kurulum</h3>
+        <ol>
+          <li>Telefonunda <b>APK indir</b>'e dokun.</li>
+          <li>İndirilen <span class="mono">bojid-R.apk</span> dosyasını aç.</li>
+          <li>Android “bilinmeyen kaynaklar” izni isterse tarayıcın için izin ver.</li>
+          <li><b>Yükle</b>'ye dokun; bojid-R ana ekranında.</li>
+        </ol>
+        <div class="req"><span>Android 7.0 ve üstü</span><span>100 KB'tan küçük</span><span>İnternet gerekmez</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sss" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="eyebrow">Sık sorulanlar</span><h2>Sorular</h2></div>
+    <div class="faq">
+      <details class="reveal"><summary>iPhone ya da iPad'de çalışır mı?</summary><p>Evet, web sürümüyle. Safari'de web sürümünü aç, Paylaş → Ana Ekrana Ekle ile uygulama gibi kullan.</p></details>
+      <details class="reveal"><summary>Kaydettiğim beat'ler nerede duruyor?</summary><p>Cihazında, uygulamanın kendi deposunda. Hesap ya da sunucu yok; telefon ile web sürümü kayıtları paylaşmaz.</p></details>
+      <details class="reveal"><summary>Ses gelmiyor, ne yapmalıyım?</summary><p>Tarayıcılar ses için bir dokunuş bekler: “Burada başlat”a ya da ekrana bir kez dokun. Telefonun sessiz modda olmadığından emin ol.</p></details>
+      <details class="reveal"><summary>APK güvenli mi?</summary><p>APK, açık kaynak koddan GitHub Actions ile otomatik derlenir. Kaynak kodu ve her sürüm GitHub'da herkese açık.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/logo.svg" alt="" style="width:26px;height:26px"><b>bojid-R</b></a>
+    <span>Web synthesizer · 8 kanallı groovebox</span>
+    <div class="links">
+      <a href="app/">Web sürümü</a>
+      <a href="https://github.com/dkarakurt/bojid/releases/latest">Sürümler</a>
+      <a href="https://github.com/dkarakurt/bojid">Kaynak kod</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(()=>{
+  const nav=document.getElementById('nav');
+  const onScroll=()=>nav.classList.toggle('scrolled',scrollY>8);addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  // reveal on scroll
+  const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{rootMargin:'0px 0px -8% 0px'}):null;
+  document.querySelectorAll('.reveal').forEach(el=>io?io.observe(el):el.classList.add('in'));
+
+  // live demo: load the real app on click (keeps the page fast; audio needs a tap anyway)
+  const cover=document.getElementById('cover'),screen=document.getElementById('screen');
+  cover.addEventListener('click',()=>{
+    const f=document.createElement('iframe');f.src='app/?embed=1';f.title='bojid-R web';f.allow='autoplay; fullscreen';
+    f.addEventListener('load',()=>f.focus());
+    screen.appendChild(f);cover.remove();
+  });
+
+  // latest version label from GitHub
+  fetch('https://api.github.com/repos/dkarakurt/bojid/releases/latest').then(r=>r.ok?r.json():null).then(j=>{
+    if(!j)return;const a=(j.assets||[]).find(x=>/\.apk$/.test(x.name));
+    document.querySelectorAll('[data-ver]').forEach(e=>e.textContent=j.tag_name);
+    const d=new Date(j.published_at);
+    document.getElementById('ver').textContent=`${j.tag_name} · ${d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})}`+(a?` · ${Math.max(1,Math.round(a.size/1024))} KB`:'');
+  }).catch(()=>{});
+})();
+</script>
+</body>
+</html>
